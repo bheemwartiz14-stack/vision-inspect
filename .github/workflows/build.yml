@@ -1,4 +1,5 @@
 name: Build & Release vision-inspect
+
 on:
   push:
     branches: [ main ]
@@ -14,7 +15,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
       - name: Install Dependencies
         run: |
@@ -25,12 +26,14 @@ jobs:
         run: |
           pyinstaller --onefile --noconsole --name vision-inspect --hidden-import=tkinter main.py
 
+      - name: Verify EXE
+        run: dir dist
+        
       - name: Install Inno Setup
         run: choco install innosetup -y
 
       - name: Create Installer
-        run: |
-          iscc installer.iss
+        run: iscc installer.iss
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
