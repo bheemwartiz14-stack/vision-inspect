@@ -4,9 +4,9 @@ black
 numpy
 requests
 opencv-python
-pysqlcipher3
 sqlcipher3
 python-dotenv
 nuitka
 pyinstaller
+pillow
 cryptography
