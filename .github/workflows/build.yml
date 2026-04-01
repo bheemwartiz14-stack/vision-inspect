@@ -1,4 +1,4 @@
-name: Build vision-inspect Installer
+name: Build vision-inspect Installer (Nuitka)
 
 on:
   push:
@@ -9,32 +9,49 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 📥 Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 🐍 Setup Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      # 🔐 Install dependencies (CLEAN & STABLE)
       - name: Install Dependencies
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install nuitka cryptography
 
-      # ✅ NO CONSOLE (GUI app)
+      # 🔥 Build EXE using Nuitka (PowerShell FIXED)
       - name: Build EXE
         run: |
-          pyinstaller --onefile --windowed --name vision-inspect --hidden-import=tkinter main.py
+          python -m nuitka main.py `
+            --onefile `
+            --standalone `
+            --windows-console-mode=disable `
+            --enable-plugin=tk-inter `
+            --include-package=cv2 `
+            --include-package=PIL `
+            --nofollow-import-to=pytest `
+            --nofollow-import-to=unittest `
+            --nofollow-import-to=pydoc `
+            --lto=yes `
+            --remove-output `
+            --output-filename=vision-inspect.exe
 
+      # 📦 Install Inno Setup
       - name: Install Inno Setup
         run: choco install innosetup -y
 
+      # 🧾 Create Installer
       - name: Create Installer
-        run: |
-          iscc installer.iss
+        run: iscc installer.iss
 
-      # ✅ ONLY DOWNLOADABLE FILE (no release)
+      # 📥 Upload final installer
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
