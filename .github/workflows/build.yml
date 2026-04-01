@@ -1,0 +1,42 @@
+name: Build vision-inspect Installer
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # ✅ NO CONSOLE (GUI app)
+      - name: Build EXE
+        run: |
+          pyinstaller --onefile --windowed --name vision-inspect --hidden-import=tkinter main.py
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Create Installer
+        run: |
+          iscc installer.iss
+
+      # ✅ ONLY DOWNLOADABLE FILE (no release)
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: vision-inspect-installer
+          path: installer/vision-inspect-setup.exe
