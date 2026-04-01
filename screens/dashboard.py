@@ -325,18 +325,15 @@ class Dashboard(tk.Frame):
         self.main.grid_columnconfigure(0, weight=1)
         self.main.grid_columnconfigure(1, weight=0)
         self.main.grid_columnconfigure(2, weight=1)
-
         self.center = ttk.Frame(self.main, padding=0)
         self.center.grid(row=0, column=1, sticky="nsew", padx=16, pady=16)
         self.center.grid_rowconfigure(1, weight=1)
         self.center.grid_columnconfigure(0, weight=1)
         self.center.grid_propagate(False)
-
         self._resize_after_id = None
         self._last_main_size = (0, 0)
         self._last_center_size = None
         self.main.bind("<Configure>", self._on_main_configure)
-
         header = ttk.Frame(self.center, padding=(16, 14))
         header.grid(row=0, column=0, sticky="ew")
         header.grid_columnconfigure(0, weight=1)

@@ -5,7 +5,14 @@ import hashlib
 load_dotenv()
 APP_TITLE = os.getenv("APP_TITLE")
 APP_NAME = APP_TITLE
-DB_PATH = os.path.expanduser(os.getenv("DB_PATH"))
+DB_PATH = os.getenv("DB_PATH", "data/app.db")
+DB_PATH = os.path.expanduser(DB_PATH)
+
+# If DB_PATH is relative, resolve it relative to the project root so it works
+# regardless of the current working directory (including when packaged).
+if not os.path.isabs(DB_PATH) and DB_PATH not in (":memory:", ""):
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    DB_PATH = os.path.join(PROJECT_ROOT, DB_PATH)
 BASE_KEY = os.getenv("APP_DB_KEY")
 CAMERA_CONFIG = [
     {
@@ -23,4 +30,3 @@ CAMERA_CONFIG = [
 ]
 # Optional (if you want license / encryption / API key)
 CAMERA_ACCESS_KEY = "MY_SECURE_KEY_123"
-

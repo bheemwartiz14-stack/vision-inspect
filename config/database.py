@@ -1,7 +1,12 @@
 import sqlite3
+import os
 from config.settings import DB_PATH
 
 def init_db():
+    if DB_PATH and DB_PATH not in (":memory:",):
+        parent = os.path.dirname(DB_PATH)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
