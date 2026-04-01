@@ -1,39 +1,48 @@
-import os
 import sqlite3
-import stat
 from config.settings import DB_PATH
 
-
 def init_db():
-    try:
-        # 1. Create folder
-        folder = os.path.dirname(DB_PATH)
-        os.makedirs(folder, exist_ok=True)
-        # 2. Set folder permission (Linux only)
-        if os.name != "nt":
-            os.chmod(folder, stat.S_IRWXU)  # 700
-        # 3. Connect DB
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        # 4. Create table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS inspections (
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS companies (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        register_id TEXT UNIQUE,
+        activation_code TEXT,
+        activation_expiry TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT,
+        email TEXT,
+        password TEXT,
+        company_id INTEGER
+    )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS jobs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            description TEXT,
             image_path TEXT,
             status TEXT,
-            synced INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            company_id INTEGER
         )
         """)
 
-        conn.commit()
-        conn.close()
+    # Sample companies
+    cursor.executemany("""
+    INSERT OR IGNORE INTO companies (id, name, register_id, activation_code, activation_expiry)
+    VALUES (?, ?, ?, ?, ?)
+    """, [
+        (1, "Alpha Tech", "COMP001", "ACT001", "2026-12-31"),
+        (2, "Beta Solutions", "COMP002", "ACT002", "2026-06-30"),
+    ])
 
-        # 5. Set DB permission (Linux only)
-        if os.name != "nt":
-            os.chmod(DB_PATH, stat.S_IRUSR | stat.S_IWUSR)  # 600
-
-        print("✅ DB Ready:", DB_PATH)
-
-    except Exception as e:
-        print("❌ DB Init Error:", str(e))
+    conn.commit()
+    conn.close()
