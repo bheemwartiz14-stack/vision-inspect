@@ -6,7 +6,6 @@ requests
 opencv-python
 sqlcipher3
 python-dotenv
-nuitka
 pyinstaller
 pillow
 cryptography

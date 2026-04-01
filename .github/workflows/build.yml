@@ -1,5 +1,4 @@
-name: Build vision-inspect Installer (Nuitka)
-
+name: Build & Release vision-inspect
 on:
   push:
     branches: [ main ]
@@ -9,49 +8,39 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 📥 Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
-      # 🐍 Setup Python
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      # 🔐 Install dependencies (CLEAN & STABLE)
+
       - name: Install Dependencies
         run: |
-          pip install --upgrade pip
           pip install -r requirements.txt
-          pip install nuitka cryptography
+          pip install pyinstaller
 
-      # 🔥 Build EXE using Nuitka (PowerShell FIXED)
       - name: Build EXE
         run: |
-          python -m nuitka main.py `
-            --onefile `
-            --standalone `
-            --windows-console-mode=disable `
-            --enable-plugin=tk-inter `
-            --include-package=cv2 `
-            --include-package=PIL `
-            --nofollow-import-to=pytest `
-            --nofollow-import-to=unittest `
-            --nofollow-import-to=pydoc `
-            --lto=yes `
-            --remove-output `
-            --output-filename=vision-inspect.exe
+          pyinstaller --onefile --noconsole --name vision-inspect --hidden-import=tkinter main.py
 
-      # 📦 Install Inno Setup
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      # 🧾 Create Installer
       - name: Create Installer
-        run: iscc installer.iss
+        run: |
+          iscc installer.iss
 
-      # 📥 Upload final installer
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: vision-inspect-installer
           path: installer/vision-inspect-setup.exe
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: installer/vision-inspect-setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
